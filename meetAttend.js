@@ -35,35 +35,63 @@ function indexResult (indexArr,result){
     return arr
 }
 
+function listName (){
+    var name = [];
+    for (var i=0; i<data.length; i++){
+        name.push(data[i]['FName']);
+    }
+    return name
+}
+
+function getByValue (value,key) {
+    var search_Key = Object.keys(data[0]);
+    search_Key.forEach((k) => {
+        var result = data.findIndex(std=> std[k] == value)
+        if (result>-1){
+            localStorage.setItem('index',result)
+        }
+        
+    })
+    var index = localStorage.getItem('index')
+    return data[index][key]
+}
+
+//Open list people
+var selector = '#ow3 > div.T4LgNb > div > div:nth-child(9) > div.crqnQb > div.rG0ybd.xPh1xb.P9KVBf > div.TqwH9c > div.SZfyod > div > div > div:nth-child(2) > span > button';
+$(selector).click();
+
 var short = "short"
-var attendIndexs = []
+var attendNames = []
+
 function update(result){
-    var Names =  document.querySelectorAll('.ZjFb7c');
-    Names.forEach((name,i) => {
-        if (removeMOE(name.textContent) == data[i].FName) {
-            attendIndexs.push(i);
+    var Names = document.querySelectorAll('.ZjFb7c');
+    Names.forEach((n) => {
+    	var name = removeMOE(n.textContent)
+        if ( listName().indexOf(name)>=0 && attendNames.indexOf(name)==-1) {
+            attendNames.push(name);
         }
     });
 
-    var absentIndexs = []
-    for (var i=0; i<data.length; i++){
-        if (attendIndexs.indexOf(i)==-1){
-            absentIndexs.push(i)
+    var absentNames = []
+    for (var i=0 , l=data.length ; i<l; i++){
+        var name = listName()[i]
+        if (attendNames.indexOf(name)==-1){
+            absentNames.push(name)
         }
     }
 
+    attendNames.sort();
+    absentNames.sort();
+
     if (result=='short'){
-        var attend = indexResult(attendIndexs,'SName');
-        attend.sort();
-        var absent = indexResult(absentIndexs,'SName');
-        absent.sort();
+        var attend = attendNames.map(function(a) {return getByValue(a,'SName')});
+        var absent = absentNames.map(function(a) {return getByValue(a,'SName')});
         console.log("HADIR\n"+listNum(attend).join("\n")+"\n\n"+"TIDAK HADIR\n"+listNum(absent).join("\n"));
     }
     else{
-        var attend = indexResult(attendIndexs,'FName');
-        attend.sort();
-        var absent = indexResult(absentIndexs,'FName');
-        absent.sort();
-        console.log("HADIR\n"+listNum(attend).join("\n")+"\n\n"+"TIDAK HADIR\n"+listNum(absent).join("\n"))
+        console.log("HADIR\n"+listNum(attendNames).join("\n")+"\n\n"+"TIDAK HADIR\n"+listNum(absentNames).join("\n"))
     }
 }
+
+update()
+setInterval(update,(5*60000))
